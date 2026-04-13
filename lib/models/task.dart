@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 class Task {
   final String id;
   final String title;
@@ -24,16 +25,20 @@ class Task {
   }
 
   // 🔹 Convert Firestore → Task
-  factory Task.fromMap(String id, Map<String, dynamic> data) {
-    return Task(
-      id: id,
-      title: data['title'] ?? '',
-      isCompleted: data['isCompleted'] ?? false,
-      subtasks: List<Map<String, dynamic>>.from(data['subtasks'] ?? []),
-      createdAt:
-          DateTime.tryParse(data['createdAt'] ?? '') ?? DateTime.now(),
-    );
-  }
+factory Task.fromMap(String id, Map<String, dynamic> data) {
+  return Task(
+    id: id,
+    title: data['title'] ?? '',
+    isCompleted: data['isCompleted'] ?? false,
+    subtasks: List<Map<String, dynamic>>.from(data['subtasks'] ?? []),
+
+    createdAt: data['createdAt'] is Timestamp
+        ? (data['createdAt'] as Timestamp).toDate()
+        : data['createdAt'] is String
+            ? DateTime.tryParse(data['createdAt']) ?? DateTime.now()
+            : DateTime.now(),
+  );
+}
 
   // 🔹 Update without recreating manually
   Task copyWith({
