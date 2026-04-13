@@ -41,42 +41,44 @@ class TaskService {
   Future<void> deleteTask(String id) async {
     await _tasksCollection.doc(id).delete();
   }
-}
 
+  // 🔹 Add subtask
+  Future<void> addSubtask(Task task, String title) async {
+    final updatedSubtasks =
+        List<Map<String, dynamic>>.from(task.subtasks);
 
-// 🔹 Add subtask
-Future<void> addSubtask(Task task, String title) async {
-  final updatedSubtasks = List<Map<String, dynamic>>.from(task.subtasks);
+    updatedSubtasks.add({
+      'title': title.trim(),
+      'isCompleted': false,
+    });
 
-  updatedSubtasks.add({
-    'title': title.trim(),
-    'isCompleted': false,
-  });
+    await _tasksCollection.doc(task.id).update({
+      'subtasks': updatedSubtasks,
+    });
+  }
 
-  await _tasksCollection.doc(task.id).update({
-    'subtasks': updatedSubtasks,
-  });
-}
+  // 🔹 Toggle subtask
+  Future<void> toggleSubtask(Task task, int index) async {
+    final updatedSubtasks =
+        List<Map<String, dynamic>>.from(task.subtasks);
 
-// 🔹 Toggle subtask
-Future<void> toggleSubtask(Task task, int index) async {
-  final updatedSubtasks = List<Map<String, dynamic>>.from(task.subtasks);
+    updatedSubtasks[index]['isCompleted'] =
+        !(updatedSubtasks[index]['isCompleted'] ?? false);
 
-  updatedSubtasks[index]['isCompleted'] =
-      !(updatedSubtasks[index]['isCompleted'] ?? false);
+    await _tasksCollection.doc(task.id).update({
+      'subtasks': updatedSubtasks,
+    });
+  }
 
-  await _tasksCollection.doc(task.id).update({
-    'subtasks': updatedSubtasks,
-  });
-}
+  // 🔹 Delete subtask
+  Future<void> deleteSubtask(Task task, int index) async {
+    final updatedSubtasks =
+        List<Map<String, dynamic>>.from(task.subtasks);
 
-// 🔹 Delete subtask
-Future<void> deleteSubtask(Task task, int index) async {
-  final updatedSubtasks = List<Map<String, dynamic>>.from(task.subtasks);
+    updatedSubtasks.removeAt(index);
 
-  updatedSubtasks.removeAt(index);
-
-  await _tasksCollection.doc(task.id).update({
-    'subtasks': updatedSubtasks,
-  });
+    await _tasksCollection.doc(task.id).update({
+      'subtasks': updatedSubtasks,
+    });
+  }
 }

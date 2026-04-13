@@ -85,37 +85,81 @@ class _TaskListScreenState extends State<TaskListScreen> {
                 }
 
                 // 🔹 Data State
-                return ListView.builder(
-                  itemCount: tasks.length,
-                  itemBuilder: (context, index) {
-                    final task = tasks[index];
+                return ExpansionTile(
+  title: Text(
+    task.title,
+    style: TextStyle(
+      decoration: task.isCompleted
+          ? TextDecoration.lineThrough
+          : null,
+    ),
+  ),
 
-                    return ListTile(
-                      title: Text(
-                        task.title,
-                        style: TextStyle(
-                          decoration: task.isCompleted
-                              ? TextDecoration.lineThrough
-                              : null,
-                        ),
-                      ),
+  leading: Checkbox(
+    value: task.isCompleted,
+    onChanged: (_) {
+      _taskService.toggleTask(task);
+    },
+  ),
 
-                      // ✅ Toggle Complete
-                      leading: Checkbox(
-                        value: task.isCompleted,
-                        onChanged: (_) {
-                          _taskService.toggleTask(task);
-                        },
-                      ),
+  trailing: IconButton(
+    icon: const Icon(Icons.delete),
+    onPressed: () {
+      _taskService.deleteTask(task.id);
+    },
+  ),
 
-                      // 🗑 Delete Task
-                      trailing: IconButton(
-                        icon: const Icon(Icons.delete),
-                        onPressed: () {
-                          _taskService.deleteTask(task.id);
-                        },
-                      ),
-                    );
+  children: [
+    // 🔹 Subtask List
+    ...task.subtasks.asMap().entries.map((entry) {
+      final index = entry.key;
+      final subtask = entry.value;
+
+      return ListTile(
+        title: Text(
+          subtask['title'] ?? '',
+          style: TextStyle(
+            decoration: (subtask['isCompleted'] ?? false)
+                ? TextDecoration.lineThrough
+                : null,
+          ),
+        ),
+        leading: Checkbox(
+          value: subtask['isCompleted'] ?? false,
+          onChanged: (_) {
+            _taskService.toggleSubtask(task, index);
+          },
+        ),
+        trailing: IconButton(
+          icon: const Icon(Icons.delete_outline),
+          onPressed: () {
+            _taskService.deleteSubtask(task, index);
+          },
+        ),
+      );
+    }),
+
+    // 🔹 Add Subtask Input
+    Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      child: Row(
+        children: [
+          Expanded(
+            child: TextField(
+              onSubmitted: (value) {
+                if (value.trim().isEmpty) return;
+                _taskService.addSubtask(task, value);
+              },
+              decoration: const InputDecoration(
+                hintText: 'Add subtask...',
+              ),
+            ),
+          ),
+        ],
+      ),
+    ),
+  ],
+);
                   },
                 );
               },
