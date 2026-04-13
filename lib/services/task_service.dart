@@ -42,3 +42,41 @@ class TaskService {
     await _tasksCollection.doc(id).delete();
   }
 }
+
+
+// 🔹 Add subtask
+Future<void> addSubtask(Task task, String title) async {
+  final updatedSubtasks = List<Map<String, dynamic>>.from(task.subtasks);
+
+  updatedSubtasks.add({
+    'title': title.trim(),
+    'isCompleted': false,
+  });
+
+  await _tasksCollection.doc(task.id).update({
+    'subtasks': updatedSubtasks,
+  });
+}
+
+// 🔹 Toggle subtask
+Future<void> toggleSubtask(Task task, int index) async {
+  final updatedSubtasks = List<Map<String, dynamic>>.from(task.subtasks);
+
+  updatedSubtasks[index]['isCompleted'] =
+      !(updatedSubtasks[index]['isCompleted'] ?? false);
+
+  await _tasksCollection.doc(task.id).update({
+    'subtasks': updatedSubtasks,
+  });
+}
+
+// 🔹 Delete subtask
+Future<void> deleteSubtask(Task task, int index) async {
+  final updatedSubtasks = List<Map<String, dynamic>>.from(task.subtasks);
+
+  updatedSubtasks.removeAt(index);
+
+  await _tasksCollection.doc(task.id).update({
+    'subtasks': updatedSubtasks,
+  });
+}
