@@ -5,17 +5,17 @@ class TaskService {
   final CollectionReference _tasksCollection =
       FirebaseFirestore.instance.collection('tasks');
 
-  // 🔹 CREATE
+  // CREATE
   Future<void> addTask(String title) async {
     await _tasksCollection.add({
       'title': title.trim(),
       'isCompleted': false,
       'subtasks': [],
-      'createdAt': DateTime.now().toIso8601String(),
+      'createdAt': FieldValue.serverTimestamp(),
     });
   }
 
-  // 🔹 READ (REAL-TIME STREAM)
+  // READ
   Stream<List<Task>> streamTasks() {
     return _tasksCollection
         .orderBy('createdAt')
@@ -30,55 +30,52 @@ class TaskService {
     });
   }
 
-  // 🔹 UPDATE
+  // UPDATE
   Future<void> toggleTask(Task task) async {
     await _tasksCollection.doc(task.id).update({
       'isCompleted': !task.isCompleted,
     });
   }
 
-  // 🔹 DELETE
+  // DELETE TASK
   Future<void> deleteTask(String id) async {
     await _tasksCollection.doc(id).delete();
   }
 
-  // 🔹 Add subtask
+  // ADD SUBTASK
   Future<void> addSubtask(Task task, String title) async {
-    final updatedSubtasks =
-        List<Map<String, dynamic>>.from(task.subtasks);
+    final updated = List<Map<String, dynamic>>.from(task.subtasks);
 
-    updatedSubtasks.add({
+    updated.add({
       'title': title.trim(),
       'isCompleted': false,
     });
 
     await _tasksCollection.doc(task.id).update({
-      'subtasks': updatedSubtasks,
+      'subtasks': updated,
     });
   }
 
-  // 🔹 Toggle subtask
+  // TOGGLE SUBTASK
   Future<void> toggleSubtask(Task task, int index) async {
-    final updatedSubtasks =
-        List<Map<String, dynamic>>.from(task.subtasks);
+    final updated = List<Map<String, dynamic>>.from(task.subtasks);
 
-    updatedSubtasks[index]['isCompleted'] =
-        !(updatedSubtasks[index]['isCompleted'] ?? false);
+    updated[index]['isCompleted'] =
+        !(updated[index]['isCompleted'] ?? false);
 
     await _tasksCollection.doc(task.id).update({
-      'subtasks': updatedSubtasks,
+      'subtasks': updated,
     });
   }
 
-  // 🔹 Delete subtask
+  // DELETE SUBTASK
   Future<void> deleteSubtask(Task task, int index) async {
-    final updatedSubtasks =
-        List<Map<String, dynamic>>.from(task.subtasks);
+    final updated = List<Map<String, dynamic>>.from(task.subtasks);
 
-    updatedSubtasks.removeAt(index);
+    updated.removeAt(index);
 
     await _tasksCollection.doc(task.id).update({
-      'subtasks': updatedSubtasks,
+      'subtasks': updated,
     });
   }
 }
